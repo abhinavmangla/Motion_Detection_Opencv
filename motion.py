@@ -3,6 +3,7 @@ import cv2
 import imutils
 import datetime
 import time
+import numpy as np
 
 # Constructing a parser
 ap = argparse.ArgumentParser()
@@ -25,17 +26,27 @@ firstFrame = None
 
 while True:
     # grab the current frame and initialize the occupied/unoccupied text
-    frame = vs.read()
+    ret, frame = vs.read()
     frame = frame if args.get("video", None) is None else frame[1]
     text = "Unoccupied"
+    # frame = cv2.UMat(frame)
+    # print(frame)
+    # frame = np.array(frame)
+    # Unpacking the tuple, it contains a bool and an array
+    # value, img_arr = frame
+    # print(frame)
+    # print(type(frame))
+    # for i in frame.size():
+    #     frame[i] = np.float32(frame[i])
+    # print(type(frame))
 
-# if the frame could not be grabbed, then we have reached the end of the video
+    # if the frame could not be grabbed, then we have reached the end of the video
     if frame is None:
         break
 
 # resize the frame, convert it to grayscale, and blur it
     # frame = imutils.resize(frame, width=500)
-    gray = cv2.cvtColor(cv2.UMat(frame), cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
 # if the first frame is None, initialize it
@@ -44,7 +55,8 @@ while True:
         continue
     # compute the absolute difference between the current frame and first frame
     frameDelta = cv2.absdiff(firstFrame, gray)
-    thresh = cv2.threshold(frameDelta, 25, 255, cv2.THRESH_BINARY)[1]
+    # assign a threshold
+    thresh = cv2.threshold(frameDelta, 125, 255, cv2.THRESH_BINARY)[1]
 
 # dilate the thresholded image to fill in holes,
 # then find contours on thresholded image
