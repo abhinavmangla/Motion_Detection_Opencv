@@ -3,7 +3,9 @@ import cv2
 import imutils
 import datetime
 import time
-import numpy as np
+
+# TODO: add erosion before dilation
+#       optimum sensitivity
 
 # Constructing a parser
 ap = argparse.ArgumentParser()
@@ -47,7 +49,7 @@ while True:
 # resize the frame, convert it to grayscale, and blur it
     # frame = imutils.resize(frame, width=500)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    gray = cv2.GaussianBlur(gray, (21, 21), 0)
+    # gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
 # if the first frame is None, initialize it
     if firstFrame is None:
@@ -56,13 +58,14 @@ while True:
     # compute the absolute difference between the current frame and first frame
     frameDelta = cv2.absdiff(firstFrame, gray)
     # assign a threshold
-    thresh = cv2.threshold(frameDelta, 125, 255, cv2.THRESH_BINARY)[1]
+    thresh = cv2.threshold(frameDelta, 25, 255, cv2.THRESH_BINARY)[1]
 
 # dilate the thresholded image to fill in holes,
 # then find contours on thresholded image
     thresh = cv2.dilate(thresh, None, iterations=2)
     cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = imutils.grab_contours(cnts)
+    firstFrame = gray
     # loop over the contours
     for c in cnts:
         # if the contour is too small, ignore it
