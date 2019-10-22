@@ -17,7 +17,7 @@ args = vars(ap.parse_args())
 
 # If video argument is null, we read from webcam
 if args.get("video", None) is None:
-    vs = cv2.VideoCapture(0)
+    vs = cv2.VideoCapture('http://192.168.43.1:8084/video')
     time.sleep(2.0)
 # Else we read from video file provided
 else:
@@ -29,6 +29,7 @@ firstFrame = None
 while True:
     # grab the current frame and initialize the occupied/unoccupied text
     ret, frame = vs.read()
+    frame = cv2.resize(frame, None, fx=0.5, fy=0.5)
     frame = frame if args.get("video", None) is None else frame[1]
     text = "Unoccupied"
     # frame = cv2.UMat(frame)
@@ -45,6 +46,7 @@ while True:
     # if the frame could not be grabbed, then we have reached the end of the video
     if frame is None:
         break
+    # cv2.resize(frame, (200, 200))
 
 # resize the frame, convert it to grayscale, and blur it
     # frame = imutils.resize(frame, width=500)
@@ -58,7 +60,7 @@ while True:
     # compute the absolute difference between the current frame and first frame
     frameDelta = cv2.absdiff(firstFrame, gray)
     # assign a threshold
-    thresh = cv2.threshold(frameDelta, 25, 255, cv2.THRESH_BINARY)[1]
+    thresh = cv2.threshold(frameDelta, 100, 255, cv2.THRESH_BINARY)[1]
 
 # dilate the thresholded image to fill in holes,
 # then find contours on thresholded image
@@ -84,7 +86,7 @@ while True:
     # show the frame and record if the user presses a key
     cv2.imshow("Security Feed", frame)
     cv2.imshow("Thresh", thresh)
-    cv2.imshow("Frame Delta", frameDelta)
+    # cv2.imshow("Frame Delta", frameDelta)
     key = cv2.waitKey(1) & 0xFF
 
 # if the `q` key is pressed, break from the loop
