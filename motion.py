@@ -3,6 +3,7 @@ import cv2
 import imutils
 import datetime
 import time
+import numpy as np
 
 # TODO: add erosion before dilation
 #       optimum sensitivity
@@ -12,13 +13,16 @@ ap = argparse.ArgumentParser()
 
 # Adding arguments
 ap.add_argument("-v", "--video", help="Video Stream")
-ap.add_argument("-a", "--min-area", type=int, default=500, help="minimum area size")
+ap.add_argument("-a", "--min-area", type=int, default=500, help="minimum area")
+ap.add_argument("-m", "--mobile")
 args = vars(ap.parse_args())
 
+if args.get("mobile", None) is not None:
+    vs = cv2.VideoCapture('http://100.83.147.60:8084/video')
 # If video argument is null, we read from webcam
-if args.get("video", None) is None:
-    vs = cv2.VideoCapture('http://192.168.43.1:8084/video')
-    time.sleep(2.0)
+elif args.get("video", None) is None:
+    vs = cv2.VideoCapture(0)
+    time.sleep(1.0)
 # Else we read from video file provided
 else:
     vs = cv2.VideoCapture(args["video"])
@@ -28,28 +32,20 @@ firstFrame = None
 
 while True:
     # grab the current frame and initialize the occupied/unoccupied text
-    ret, frame = vs.read()
-    frame = cv2.resize(frame, None, fx=0.5, fy=0.5)
+    ret, frame = vs.read(0)
+
+    frame = cv2.resize(frame, None, fx=0.7, fy=0.7)
+
     frame = frame if args.get("video", None) is None else frame[1]
     text = "Unoccupied"
-    # frame = cv2.UMat(frame)
-    # print(frame)
-    # frame = np.array(frame)
-    # Unpacking the tuple, it contains a bool and an array
-    # value, img_arr = frame
-    # print(frame)
-    # print(type(frame))
-    # for i in frame.size():
-    #     frame[i] = np.float32(frame[i])
-    # print(type(frame))
+    frame = np.full((100, 80, 3), 12, np. uint8)
 
-    # if the frame could not be grabbed, then we have reached the end of the video
+
+# if the frame could not be grabbed, then we have reached the end of the video
     if frame is None:
         break
-    # cv2.resize(frame, (200, 200))
 
 # resize the frame, convert it to grayscale, and blur it
-    # frame = imutils.resize(frame, width=500)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     # gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
@@ -60,7 +56,7 @@ while True:
     # compute the absolute difference between the current frame and first frame
     frameDelta = cv2.absdiff(firstFrame, gray)
     # assign a threshold
-    thresh = cv2.threshold(frameDelta, 100, 255, cv2.THRESH_BINARY)[1]
+    thresh = cv2.threshold(frameDelta, 40, 255, cv2.THRESH_BINARY)[1]
 
 # dilate the thresholded image to fill in holes,
 # then find contours on thresholded image
